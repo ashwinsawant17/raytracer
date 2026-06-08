@@ -1,4 +1,4 @@
-# A Raycaster for Windows in C++ using SDL3
+# A Raytracer for Windows in C++ using SDL3
 
 It's built with CMake, and compiled with msvc
 ```
