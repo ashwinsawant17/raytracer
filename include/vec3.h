@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 #include <concepts>
 
@@ -106,3 +108,4 @@ class Vec3 {
         Vec3<T>& operator/=(S s) { x /= s; y /= s; z /= s; return *this; }
 
 };
+

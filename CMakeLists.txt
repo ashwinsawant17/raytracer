@@ -6,6 +6,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Separate output directories per config
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -20,10 +24,8 @@ add_executable(raytracer
     src/main.cpp
 )
 
-target_link_libraries(raytracer PRIVATE SDL3::SDL3)
-
-add_custom_command(TARGET raytracer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<TARGET_RUNTIME_DLLS:raytracer>
-    $<TARGET_FILE_DIR:raytracer>
+target_include_directories(raytracer PUBLIC 
+    ${CMAKE_SOURCE_DIR}/include
 )
+
+target_link_libraries(raytracer PRIVATE SDL3::SDL3)
