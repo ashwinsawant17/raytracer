@@ -3,6 +3,8 @@
 #include <vector>
 #include <variant>
 #include <numbers>
+#include <cstdint>
+#include <cstring>
 
 // raytracer includes
 #include "material.h"

@@ -1,5 +1,6 @@
 #pragma once
 #include "utils/type_config.h"
+#include <cstdint>
 
 class Texture {
 public:

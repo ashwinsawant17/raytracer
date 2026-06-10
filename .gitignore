@@ -4,3 +4,7 @@ build/*
 
 # rendered images
 renders/*
+
+# profiling
+gmon.out
+profile.txt
