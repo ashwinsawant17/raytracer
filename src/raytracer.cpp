@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <optional>
 
 
 Scene::Scene(std::vector<Primitive> prims, std::vector<Light> lights, Vec3d bg) 
@@ -19,18 +20,17 @@ Scene::Scene(std::vector<Primitive> prims) :
 
 Scene::~Scene() {}
 
-Hit Scene::intersect(Ray ray) {
+std::optional<Hit> Scene::intersect(Ray& ray) {
 
     //std::cout << "Performing intersect on scene" << std::endl;
-    bool hit_found = false;
-    Hit hit_data = {};
+    std::optional<Hit> hit_data = {};
     //std::cout << "Beginning loop" << std::endl;
-    for (Primitive p : primitives) {
-        Hit new_hit = p.intersect(ray);
+    for (Primitive& p : primitives) {
+        std::optional<Hit> new_hit = p.intersect(ray);
         // only update the hit data if
         // our current hit is a no hit
         // or the new hit is a hit and it's closer to the ray origin than the old
-        if (!hit_data.hit || (new_hit.hit && new_hit.t < hit_data.t)) {
+        if (!hit_data || (new_hit && new_hit->t < hit_data->t)) {
             hit_data = new_hit;
         }
     }
@@ -121,7 +121,7 @@ void RayTracer::clear_buffer() {
     memset(pixels, 0, width * height * img_wr.w_channels);
 }
 
-Vec3d RayTracer::shade(Ray ray, Hit hit) {
+Vec3d RayTracer::shade(Ray& ray, Hit& hit) {
     // TODO: add option for texture sampling for background
     if (!hit.hit) {
         return scene.background;
@@ -159,9 +159,17 @@ void RayTracer::render() {
             //std::cout << "Generating Ray" << std::endl;
             Ray ray = camera.generate_ray(((scalar) i + 0.5) / width, ((scalar) j + 0.5) / height);
             //std::cout << "Computing intersect" << std::endl;
-            Hit hit = scene.intersect(ray);
+            std::optional<Hit> hit = scene.intersect(ray);
             //std::cout << "Computing color" << std::endl;
-            Vec3d color = shade(ray, hit);
+
+            Vec3d color;
+
+            if (hit) {
+                color = scene.background;
+            } else {
+                color = shade(ray, *hit);
+            }
+            
 
             // now that we have the color, assign it to our pixels buffer
             // TODO: FOR RIGHT NOW ASSUMES 4 CHANNELS

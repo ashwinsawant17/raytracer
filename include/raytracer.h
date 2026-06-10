@@ -5,6 +5,7 @@
 #include <numbers>
 #include <cstdint>
 #include <cstring>
+#include <optional>
 
 // raytracer includes
 #include "material.h"
@@ -27,7 +28,7 @@ public:
     Scene(std::vector<Primitive> prims);
     ~Scene();
 
-    Hit intersect(Ray ray);
+    std::optional<Hit> intersect(Ray& ray);
 };
 
 struct CameraParams {
@@ -86,7 +87,7 @@ public:
     ~RayTracer();
 
     void add_light(Light light);
-    Vec3d shade(Ray ray, Hit hit);
+    Vec3d shade(Ray& ray, Hit& hit);
     void render();
     void write_image(std::string fname);
     void clear_buffer();

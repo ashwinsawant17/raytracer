@@ -7,4 +7,4 @@ renders/*
 
 # profiling
 gmon.out
-profile.txt
+profile*.txt

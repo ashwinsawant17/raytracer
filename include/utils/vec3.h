@@ -27,7 +27,6 @@ class Vec3 {
         Vec3(T x, T y, T z) : x(x), y(y), z(z) {};
         Vec3(T *arr) : x(arr[0]), y(arr[1]), z(arr[2]) {};
         Vec3() : x(), y(), z() {};
-        ~Vec3() {};
 
         // compute the dot product between two vectors
         T dot(const Vec3<T>& other) const {
@@ -36,7 +35,7 @@ class Vec3 {
 
         // compute the norm of a vector
         T norm() const {
-            return std::sqrt(dot(*this));
+            return std::sqrt(x*x + y*y + z*z);
         }
 
         // normalize this vector in place

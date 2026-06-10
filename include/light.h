@@ -13,7 +13,7 @@ public:
     PointLight(Vec3d position, scalar intensity);
     ~PointLight();
 
-    Vec3d illuminate(Ray ray, Hit hit, std::vector<Primitive> prims) const;
+    Vec3d illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) const;
 
 };
 
@@ -27,7 +27,7 @@ public:
     ~AmbientLight();
 
 
-    Vec3d illuminate(Ray ray, Hit hit, std::vector<Primitive> prims) const;
+    Vec3d illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) const;
 };
 
 

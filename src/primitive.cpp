@@ -3,6 +3,7 @@
 #include <cmath>
 #include <numbers>
 #include <iostream>
+#include <optional>
 
 
 Sphere::Sphere(Vec3d c, scalar r, Material m) : 
@@ -19,22 +20,18 @@ Sphere::Sphere(Vec3d c, scalar r) :
 
 Sphere::~Sphere() {}
 
-Hit Sphere::intersect(Ray ray) {
+std::optional<Hit> Sphere::intersect(Ray& ray) {
     //std::cout << "Computing intersect for sphere" << std::endl;
-    Vec3d p = ray.origin;
-    Vec3d v = ray.direction;
-    Vec3d center = this->center;
-    scalar radius = this->radius;
 
-    scalar a = v.dot(v);
-    scalar b = 2 * (p - center).dot(v);
-    scalar c = (p - center).dot(p - center) - radius * radius;
+    scalar a = ray.direction.dot(ray.direction);
+    scalar b = 2 * (ray.origin - center).dot(ray.direction);
+    scalar c = (ray.origin - center).dot(ray.origin - center) - radius * radius;
 
     scalar disc = b * b - 4 * a * c;
 
     // return a "no hit"
     if (disc < 0) {
-        return Hit();
+        return {};
     } else {
         scalar root = std::sqrt(disc);
 
@@ -46,7 +43,7 @@ Hit Sphere::intersect(Ray ray) {
 
         scalar t_out;
         if (!valid_t1 && !valid_t2) {
-            return Hit();
+            return {};
         } else if (valid_t1 && valid_t2) {
             t_out = (t1 < t2)? t1 : t2;
         } else if (valid_t1) {
@@ -55,8 +52,8 @@ Hit Sphere::intersect(Ray ray) {
             t_out = t2;
         }
 
-        Vec3d intersect_point = p + v * t_out;
-        Vec3d unit_normal = (intersect_point - this->center).normalized();
+        Vec3d intersect_point = ray.origin + ray.direction * t_out;
+        Vec3d unit_normal = (intersect_point - center).normalized();
 
         scalar theta = std::atan2(unit_normal.z, unit_normal.x);
         scalar phi = std::acos(unit_normal.y);

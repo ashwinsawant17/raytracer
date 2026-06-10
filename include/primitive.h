@@ -1,6 +1,7 @@
 #pragma once
 // std includes
 #include <variant>
+#include <optional>
 
 #include "utils/vec3.h"
 #include "utils/type_config.h"
@@ -11,7 +12,7 @@
 class IPrimitive {
 public:
     virtual ~IPrimitive() = default;
-    virtual Hit intersect(Ray ray) = 0;
+    virtual std::optional<Hit> intersect(Ray& ray) = 0;
 };
 
 
@@ -26,7 +27,7 @@ public:
     ~Sphere();
     // constructor for a default material
     Sphere(Vec3d c, scalar r);
-    Hit intersect(Ray ray);
+    std::optional<Hit> intersect(Ray& ray);
 private:
 };
 
