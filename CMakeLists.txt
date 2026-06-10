@@ -32,7 +32,7 @@ add_executable(raytracer
 )
 
 if(UNIX)
-    option(ENABLE_PROFILING "Enable gprof profiling" ON)
+    option(ENABLE_PROFILING "Enable gprof profiling" OFF)
 
     if(ENABLE_PROFILING)
         target_compile_options(raytracer PRIVATE -pg)

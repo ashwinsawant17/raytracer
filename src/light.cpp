@@ -30,7 +30,7 @@ Vec3d PointLight::illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) 
             in_shadow = true;
         }
     }
-
+    in_shadow = false;
     // if the hit is in shadow, simply return a 0 vector
     if (in_shadow) {
         return Vec3d(0, 0, 0);
