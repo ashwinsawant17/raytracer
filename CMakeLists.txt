@@ -22,6 +22,11 @@ FetchContent_MakeAvailable(SDL3)
 
 add_executable(raytracer
     src/main.cpp
+    src/image.cpp
+    src/primitive.cpp
+    src/texture.cpp
+    src/raytracer.cpp
+    src/light.cpp
 )
 
 target_include_directories(raytracer PUBLIC 

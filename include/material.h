@@ -1,7 +1,12 @@
-#include "type_config.h"
-#include "vec3.h"
+#pragma once
+#include "utils/type_config.h"
+#include "utils/vec3.h"
 
-typedef struct _material {
-    Vec3d k_d;
-    
-} Material;
+struct Material {
+    Vec3d k_d = Vec3d(0.2, 0.2, 0.2);;
+    scalar k_s = 0.3;
+    scalar p = 90;
+    scalar k_m = 0.4;
+    Vec3d k_a = Vec3d(0.2, 0.2, 0.2);
+    // TODO: add textures for materials
+};

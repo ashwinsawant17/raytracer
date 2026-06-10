@@ -26,6 +26,7 @@ class Vec3 {
 
         Vec3(T x, T y, T z) : x(x), y(y), z(z) {};
         Vec3(T *arr) : x(arr[0]), y(arr[1]), z(arr[2]) {};
+        Vec3() : x(), y(), z() {};
         ~Vec3() {};
 
         // compute the dot product between two vectors
@@ -45,7 +46,7 @@ class Vec3 {
 
         // get a new vector that is the normalized version
         Vec3<T> normalized() {
-            return this / norm();
+            return *this / norm();
         }
 
         // compute the cross product
