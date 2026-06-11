@@ -15,8 +15,7 @@
 #define MAX_R 2
 #define MIN_R 0.1
 
-int main(void) {
-
+Scene random_spheres() {
     // initialize random numbers
     std::random_device dev;
     std::mt19937_64 engine(dev());
@@ -24,7 +23,6 @@ int main(void) {
     std::uniform_real_distribution<scalar> d_dist(-100, -10);
     std::uniform_real_distribution<scalar> x_dist(-24, 24);
     std::uniform_real_distribution<scalar> c_dist(0, 1);
-    
 
     // initialize a bunch of random spheres
     std::vector<Primitive> prims{};
@@ -33,7 +31,7 @@ int main(void) {
         Vec3d color(c_dist(engine), c_dist(engine), c_dist(engine));
         Material m = {
             .k_d = color,
-            .k_a = color
+            .k_a = color,
         };
 
         scalar r = r_dist(engine);
@@ -44,31 +42,70 @@ int main(void) {
 
     }
 
-    /*
-    Vec3d center = Vec3d(0, 5, -15);
-    Sphere s = Sphere(center, 5);
-    std::vector<Primitive> prims({s});
-    */
-    uint32_t w = 800, h = 600;
+    std::vector<Light> lights = {
+        PointLight(Vec3d(12, 10, -5), 300),
+        PointLight(Vec3d(-20, 13, -5), 200),
+        AmbientLight(0.3)
+    };
+
+    Scene s(prims, lights);
+
+    return s;
+}
+
+int main(void) {
+
+    
+
+    Material tan = {
+        .k_d=Vec3d(0.4, 0.4, 0.2),
+        .k_s = 0.3,
+        .p = 90,
+        .k_m=0.3
+    };
+
+    Material blue = {
+        .k_d = Vec3d(0.2, 0.2, 0.4),
+        .k_m = 0.5
+    };
+
+    Material gray = {
+        .k_d = Vec3d(0.2, 0.2, 0.2),
+        .k_m = 0.5
+    };
+
+    std::vector<Primitive> prims = {
+        Sphere(Vec3d(-0.7, 0, 0), 0.5, tan),
+        Sphere(Vec3d(0.7, 0, 0), 0.5, blue),
+        Sphere(Vec3d(0, -40, 0), 39.5, gray)
+    };
+
+    std::vector<Light> lights = {
+        PointLight(Vec3d(12, 10,5), 300),
+        AmbientLight(.2)
+    };
+    
+
+    uint32_t w = 1920, h = 1080;
 
     RayTracerParams rt_config {
         .width = w,
         .height = h,
+        .max_depth = 4,
+        .min_k_m = 0.00000001,
         .prims = prims,
-        .lights = std::vector<Light>(),
+        .lights = lights,
         .cam_params = {
             .aspect = (scalar) w / h,
-            .vfov = std::numbers::pi / 4
+            .vfov = std::numbers::pi / 4,
+            .eye = Vec3d(3, 1.2, 5),
+            .target = Vec3d(0, -0.4, 0)
         }
     };
 
     RayTracer rt(rt_config);
-
-    rt.add_light(PointLight(Vec3d(12, 10, -5), 300));
-    rt.add_light(PointLight(Vec3d(-20, 13, -5), 200));
-    rt.add_light(AmbientLight(0.3));
-
+    rt.scene.background = Vec3d(0.2, 0.3, 0.5);
     rt.render();
-    rt.write_image("renders/test4.png");
+    rt.write_image("renders/test5.png");
     return 0;
 } 

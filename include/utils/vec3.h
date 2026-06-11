@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <concepts>
+#include <iostream>
 
 template<typename T>
 concept Vectorizable = requires(T a, T b) {
@@ -52,7 +53,7 @@ class Vec3 {
         Vec3<T> cross(Vec3<T>& other) {
             return {
                 y * other.z - z * other.y,
-                x * other.z - z * other.x,
+                z * other.x - x * other.z,
                 x * other.y - y * other.x
             };
         }
@@ -60,6 +61,12 @@ class Vec3 {
 
 
         // operator overloads
+        // print it out
+        friend std::ostream& operator<<(std::ostream& os, const Vec3<T>& v) {
+            os << "{" << v.x << ", " << v.y << ", " << v.z << "}";
+            return os;
+        }
+
         // add two vectors
         friend Vec3<T> operator+(const Vec3<T>& lhs, const Vec3<T>& rhs) {
             return Vec3<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
@@ -91,11 +98,15 @@ class Vec3 {
             return {vec.x * scalar, vec.y * scalar, vec.z * scalar};
         }
 
-        // divide by scalar
+        // divide
         // vec / scalar
         template<typename S> requires std::is_arithmetic_v<S>
         friend Vec3<T> operator/(const Vec3<T>& vec, S scalar) {
             return {vec.x / scalar, vec.y / scalar, vec.z / scalar};
+        }
+        // component wise vec / vec
+        friend Vec3<T> operator/(const Vec3<T>& vec, const Vec3<T>& other) {
+            return {vec.x / other.x, vec.y / other.y, vec.z / other.z};
         }
 
         // compound assignment
@@ -106,6 +117,7 @@ class Vec3 {
         Vec3<T>& operator*=(S s) { x *= s; y *= s; z *= s; return *this; }
         template<typename S> requires std::is_arithmetic_v<S>
         Vec3<T>& operator/=(S s) { x /= s; y /= s; z /= s; return *this; }
+        Vec3<T>& operator/=(const Vec3<T>& rhs) { x /= rhs.x; y /= rhs.y; z /= rhs.z; return *this; }
 
 };
 

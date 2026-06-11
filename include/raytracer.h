@@ -66,6 +66,8 @@ public:
 struct RayTracerParams {
     uint32_t width;
     uint32_t height;
+    uint8_t max_depth = 4;
+    scalar min_k_m = 0.00000001;
     uint8_t num_channels = 4;
     std::vector<Primitive> prims;
     std::vector<Light> lights = std::vector<Light>({AmbientLight(Vec3d(1, 1, 1))});
@@ -80,6 +82,8 @@ public:
     Scene scene;
     ImageWriter img_wr;
     uint32_t width, height;
+    uint8_t max_depth;
+    scalar min_k_m;
     uint8_t *pixels;
 
 
@@ -87,6 +91,7 @@ public:
     ~RayTracer();
 
     void add_light(Light light);
+    Vec3d shade(Ray &ray, Hit& hit, unsigned int depth);
     Vec3d shade(Ray& ray, Hit& hit);
     void render();
     void write_image(std::string fname);

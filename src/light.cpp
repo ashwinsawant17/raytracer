@@ -26,11 +26,12 @@ Vec3d PointLight::illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) 
         std::optional<Hit> temp_hit = p.intersect(temp_ray);
 
         // if this hit is closer to the point light than our actual hit, then it's in shadow
-        if (temp_hit && dist > temp_hit->t + EPSILON) {
+        if (temp_hit && dist > temp_hit->t) {
             in_shadow = true;
+            break;
         }
     }
-    in_shadow = false;
+    // in_shadow = false;
     // if the hit is in shadow, simply return a 0 vector
     if (in_shadow) {
         return Vec3d(0, 0, 0);
@@ -38,7 +39,7 @@ Vec3d PointLight::illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) 
     // if it's not in shadow, compute the light calculations
     } else {
         //std::cout << "In Light" << std::endl;
-        Vec3d& n = hit.normal;
+        Vec3d n = hit.normal.normalized();
         Vec3d& l = direction;
         Vec3d v = (ray.origin - hit.point).normalized();
         Vec3d h = (l + v).normalized();
@@ -47,11 +48,12 @@ Vec3d PointLight::illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) 
 
         scalar& r = dist;
 
-        Vec3d l_base = std::max((scalar) 0, n.dot(l)) * intensity / (r * r);
+        Vec3d l_inc = intensity / (r * r);
+        scalar f_diff = std::max((scalar) 0, n.dot(l));
         scalar f_spec = m.k_s * std::pow(std::max((scalar) 0, n.dot(h)), m.p);
-    
-        Vec3d l_diffuse = m.k_d * l_base;
-        Vec3d l_spec = f_spec * l_base;
+
+        Vec3d l_diffuse = m.k_d * f_diff * l_inc;
+        Vec3d l_spec = f_spec * l_inc;
 
         return l_diffuse + l_spec;
     }
@@ -62,5 +64,5 @@ AmbientLight::AmbientLight(Vec3d intensity) : intensity(intensity) {}
 AmbientLight::AmbientLight(scalar intensity) : intensity(intensity, intensity, intensity) {}
 AmbientLight::~AmbientLight() {}
 Vec3d AmbientLight::illuminate(Ray& ray, Hit& hit, std::vector<Primitive>& prims) const {
-    return intensity * hit.material.k_a;
+    return intensity * hit.material.k_d;
 }

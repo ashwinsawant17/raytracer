@@ -1,4 +1,5 @@
 #include "raytracer.h"
+#include <algorithm>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -11,7 +12,7 @@ Scene::Scene(std::vector<Primitive> prims, std::vector<Light> lights, Vec3d bg)
 Scene::Scene(std::vector<Primitive> prims, std::vector<Light> lights) :
     primitives(prims),
     lights(lights),
-    background(Vec3d(0.2, 0.3, 0.5)) {}
+    background(Vec3d(0, 0, 0)) {}
 
 Scene::Scene(std::vector<Primitive> prims) : 
     primitives(prims),
@@ -23,7 +24,7 @@ Scene::~Scene() {}
 std::optional<Hit> Scene::intersect(Ray& ray) {
 
     //std::cout << "Performing intersect on scene" << std::endl;
-    std::optional<Hit> hit_data = {};
+    std::optional<Hit> hit_data;
     //std::cout << "Beginning loop" << std::endl;
     for (Primitive& p : primitives) {
         std::optional<Hit> new_hit = p.intersect(ray);
@@ -65,7 +66,7 @@ Camera::Camera(CameraParams params) {
     right.normalize();
 
     // the properly computed up vector
-    up = (forward).cross(right);
+    up = (-forward).cross(right);
     up.normalize();
 
 }
@@ -92,6 +93,7 @@ RayTracer::RayTracer(RayTracerParams params) :
     camera(params.cam_params),
     scene(params.prims, params.lights),
     img_wr(params.num_channels),
+    max_depth(params.max_depth), min_k_m(params.min_k_m),
     width(params.width), height(params.height)
 {
     pixels = static_cast<uint8_t *>(calloc(params.height * params.width * params.num_channels, 1));
@@ -121,30 +123,54 @@ void RayTracer::clear_buffer() {
     memset(pixels, 0, width * height * img_wr.w_channels);
 }
 
-Vec3d RayTracer::shade(Ray& ray, Hit& hit) {
+Vec3d RayTracer::shade(Ray& ray, Hit& hit, unsigned int depth) {
     // TODO: add option for texture sampling for background
-    if (!hit.hit) {
-        return scene.background;
-    } else {
-        // starting color output is black due to no light
-        Vec3d output = Vec3d(0, 0, 0);
-        
-        // iterate over all the lights and compute their contribution
-        for (const Light light : scene.lights) {
+    
+    // starting color output is black due to no light
+    Vec3d output = Vec3d(0, 0, 0);
+    
+    // iterate over all the lights and compute their contribution
+    for (const Light light : scene.lights) {
 
-            output += std::visit([&](const auto& l) -> Vec3d{
-                return l.illuminate(ray, hit, scene.primitives);
-            }, light);
+        output += std::visit([&](const auto& l) -> Vec3d{
+            return l.illuminate(ray, hit, scene.primitives);
+        }, light);
+    }
+
+    // TODO: add capability for mirror reflectiosn
+    if (depth < max_depth && hit.material.k_m > min_k_m) {
+        Vec3d v = (ray.origin - hit.point).normalized();
+
+        // add a slight offset to avoid self intersection
+        Ray new_ray = {
+            .origin=hit.point,
+            .direction=2 * hit.normal.dot(v) * hit.normal - v,
+            .start=EPSILON
+        };
+
+        std::optional<Hit> new_hit = scene.intersect(new_ray);
+        
+        // TODO: again, add capability for sampling a background texture
+        Vec3d reflected;
+        if (new_hit) {
+            reflected = shade(new_ray, *new_hit, depth + 1);
+        } else {
+            reflected = scene.background;
         }
 
-        // TODO: add capability for mirror reflectiosn
-
-
-        // TODO: use the base color from the texture
-
-        // return the computed color
-        return output;
+        output += hit.material.k_m * reflected;
     }
+
+    // TODO: use the base color from the texture
+
+    // return the computed color
+    return output;
+
+}
+
+Vec3d RayTracer::shade(Ray& ray, Hit& hit) {
+    // if we don't want mirror reflection, just pass in the max depth automatically
+    return shade(ray, hit, max_depth);
 }
 
 void RayTracer::render() {
@@ -161,26 +187,36 @@ void RayTracer::render() {
             //std::cout << "Computing intersect" << std::endl;
             std::optional<Hit> hit = scene.intersect(ray);
             //std::cout << "Computing color" << std::endl;
-
-            Vec3d color;
-
-            if (hit) {
-                color = scene.background;
-            } else {
-                color = shade(ray, *hit);
+            if (i == 900 && j == 400) {
+                if (hit) std::cout << "Hit Material: " << hit->material.k_d << std::endl;
+                if (!hit) std::cout << "No Hit" << std::endl;
             }
             
+            Vec3d color;
+
+            if (!hit) {
+                color = scene.background;
+            } else {
+                color = shade(ray, *hit, 0);
+            }
+
+            if (i == 900 && j == 400) {
+                std::cout << "Color: " << color << std::endl;
+            }
+            
+            // tone mapping, maybe disable?
+            // color = color / (color + Vec3d(1.0, 1.0, 1.0));
 
             // now that we have the color, assign it to our pixels buffer
             // TODO: FOR RIGHT NOW ASSUMES 4 CHANNELS
             auto pixel_ind = (j * width + i) * img_wr.w_channels;
             //std::cout << "i: " << i << ", j: " << j << ", ind: " << pixel_ind << std::endl;
             // red
-            pixels[pixel_ind] = static_cast<uint8_t>(color.x * 255);
+            pixels[pixel_ind] = static_cast<uint8_t>(std::clamp(color.x, 0.0, 1.0) * 255);
             // blue
-            pixels[pixel_ind + 1] = static_cast<uint8_t>(color.y * 255);
+            pixels[pixel_ind + 1] = static_cast<uint8_t>(std::clamp(color.y, 0.0, 1.0) * 255);
             // green
-            pixels[pixel_ind + 2] = static_cast<uint8_t>(color.y * 255);
+            pixels[pixel_ind + 2] = static_cast<uint8_t>(std::clamp(color.z, 0.0, 1.0) * 255);
             pixels[pixel_ind + 3] = 255;
         }
     }

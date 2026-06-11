@@ -18,14 +18,14 @@ Sphere::Sphere(Vec3d c, scalar r) :
     .k_a = Vec3d(0.2, 0.2, 0.2)
 }) {}
 
-Sphere::~Sphere() {}
 
 std::optional<Hit> Sphere::intersect(Ray& ray) {
     //std::cout << "Computing intersect for sphere" << std::endl;
+    Vec3d diff {ray.origin - center};
 
     scalar a = ray.direction.dot(ray.direction);
-    scalar b = 2 * (ray.origin - center).dot(ray.direction);
-    scalar c = (ray.origin - center).dot(ray.origin - center) - radius * radius;
+    scalar b = 2 * (diff).dot(ray.direction);
+    scalar c = (diff).dot(diff) - radius * radius;
 
     scalar disc = b * b - 4 * a * c;
 

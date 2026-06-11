@@ -24,11 +24,22 @@ public:
     scalar radius;
     Material material;
     Sphere(Vec3d c, scalar r, Material m);
-    ~Sphere();
     // constructor for a default material
     Sphere(Vec3d c, scalar r);
     std::optional<Hit> intersect(Ray& ray);
 private:
+};
+
+// TODO: make it possible for the Triangle to 
+class Triangle : IPrimitive {
+public:
+    Vec3d points[3];
+    scalar uvs[3][2];
+    Material material;
+    
+    // the primitives 
+    Triangle();
+
 };
 
 
